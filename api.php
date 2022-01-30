@@ -4,6 +4,7 @@
 
     //require_once('customer.php');
     //require_once('JWT.php');
+    
     require 'vendor/autoload.php';
     
     use Firebase\JWT\JWT;
@@ -17,8 +18,8 @@
         public function __construct(){
             parent::__construct();
 
-            $db = new DbConnect;
-            $this->dbConn = $db->connect();
+            //$db = new DbConnect;
+            //$this->dbConn = $db->connect();
         }
 
         public function generateToken(){
@@ -70,37 +71,37 @@
             $name = $this->validateParameter('name', $this->param['name'], STRING, false);
             $email = $this->validateParameter('emai', $this->param['email'], STRING, false);
             $addr = $this->validateParameter('addr', $this->param['addr'], STRING, false);
-            $mobile = $this->validateParameter('mobile', $this->param['mobile'], STRING, false);
+            $mobile = $this->validateParameter('mobile', $this->param['mobile'], INTEGER, false);
 
             
             
             try {
-                
-                $token = $this->getBearerToken();
+                /** MOVED THIS in TUTORIAL 9 up to parent class Rest */
+                //$token = $this->getBearerToken();
                 
                 /**did not work! */
-                //$payload = JWT::decode($token, new Key(SECRET_KEY, ['HS256']), ['HS256']);
+                /**$payload = JWT::decode($token, new Key(SECRET_KEY, ['HS256']), ['HS256']);*/
                 
                 /**I have to create a Key Object instead! */
-                $t_key = new Key(SECRET_KEY, 'HS256');
-                $payload = JWT::decode($token, $t_key);
+                //$t_key = new Key(SECRET_KEY, 'HS256');
+                //$payload = JWT::decode($token, $t_key);
 
-                $stmt = $this->dbConn->prepare("SELECT * FROM users WHERE id = :userId");
+                //$stmt = $this->dbConn->prepare("SELECT * FROM users WHERE id = :userId");
                 
-                $stmt->bindParam(":userId", $payload->userId);
-                //$stmt->bindParam(":pass", $pass);
-                $stmt->execute();
-                $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                if (!is_array($user)){
-                    $this->returnResponse(INVALID_USER_PASS, "This user is not found in our database!");
-                }
+                //$stmt->bindParam(":userId", $payload->userId);
                 
-                if ( $user['active'] == 0 ){
-                    $this->returnResponse(USER_NOT_ACTIVE, "This user maybe deactivated, contact admin!");
-                }
+                //$stmt->execute();
+                //$user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                print_r($payload->userId);
+                //if (!is_array($user)){
+                  //  $this->returnResponse(INVALID_USER_PASS, "This user is not found in our database!");
+                //}
+                
+                //if ( $user['active'] == 0 ){
+                  //  $this->returnResponse(USER_NOT_ACTIVE, "This user maybe deactivated, contact admin!");
+                //}
+
+                //print_r($payload->userId);
 
                 //EVERYTHING OK ADD TO DATABAS
                 $cust = new Customer;
@@ -108,7 +109,8 @@
                 $cust->setEmail($email);
                 $cust->setAddress($addr);
                 $cust->setMobile($mobile);
-                $cust->setCreatedBy($payload->userId);
+                /**$cust->setCreatedBy($payload->userId);  HAD TO CHANGE HERE, WAS NOT IN TUTORIAL nr 9!*/
+                $cust->setCreatedBy($this->userId);
                 $cust->setCreatedOn(date('Y-m-d'));
 
                 $booStatus = true;
@@ -127,12 +129,82 @@
             }
             catch (Exception $e){
                 $this->throwError(ACCES_TOKEN_ERRORS, $e->getMessage());
+            }          
+        }
+
+        public function getCustomerDetails() {
+            
+            $customerId =   $this->validateParameter('customerId', $this->param['customerId'], INTEGER, false);
+            
+            $cust = new Customer;
+            $cust->setId($customerId);
+
+            //echo $cust->getId();
+            
+            $customer = $cust->getCustomerDetailsById();
+
+            if (!is_array($customer)){
+                $this->returnResponse(SUCCESS_RESPONSE, 'Customer details is not in the Database' );
             }
+            print_r($customer); exit;
+            $response['customerId'] = $customer['id'];
+            $response['customerName'] = $customer['name'];
+            $response['email'] = $customer['email'];
+            $response['mobile'] = $customer['mobile'];
+            $response['address'] = $customer['address'];
+            $response['createdBy'] = $customer['created_user'];
+            $response['lastUpdatedBy'] = $customer['updated_user'];
+
+            $this->returnResponse(SUCCESS_RESPONSE, $response );
+            //print_r($customer); exit;
+
+        }
+
+
+        public function updateCustomer()
+        {
+            
+            $customerId = $this->validateParameter('customerId', $this->param['customerId'], INTEGER);
+            $name = $this->validateParameter('name', $this->param['name'], STRING, false);
+            
+            $addr = $this->validateParameter('addr', $this->param['addr'], STRING, false);
+            $mobile = $this->validateParameter('mobile', $this->param['mobile'], INTEGER, false);
 
             
+            
+            try {
+               
+
+                //EVERYTHING OK ADD TO DATABAS
+                $cust = new Customer;
+                $cust->setId($customerId);
+                $cust->setName($name);
+                $cust->setAddress($addr);
+                $cust->setMobile($mobile);
+                /**$cust->setCreatedBy($payload->userId);  HAD TO CHANGE HERE, WAS NOT IN TUTORIAL nr 9!*/
+                $cust->setUpdatedBy($this->userId);
+                $cust->setUpdatedOn(date('Y-m-d'));
+
+                $booStatus = true;
+
+                if (!$cust->update()){
+                    $php_errormsg = 'Failed to update';
+                    $booStatus = false;
+                }
+                else{
+                    $message = "Updated succesfullt!";
+                }
+
+                $this->returnResponse(SUCCESS_RESPONSE, $message);
+                
+                
+            }
+            catch (Exception $e){
+                $this->throwError(ACCES_TOKEN_ERRORS, $e->getMessage());
+            }          
         }
 
         
 
-    }
+    }//END OF CLASS
 ?>

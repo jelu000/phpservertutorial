@@ -54,7 +54,7 @@
         }
 
         public function insert(){
-
+            
             $sql = 'INSERT INTO ' . $this->tableName . '(id, name, email, address, mobile, created_by, created_on) VALUES(null, :name, :email, :address, :mobile, :createdBy, :createdOn)';
             
             $stmt = $this->dbConn->prepare($sql);
@@ -79,13 +79,13 @@
             $sql = "UPDATE " . $this->tableName . " SET ";
 
             if ( $this->getName() != null){
-                $sql .= " name '" . $this->getName() . "' ";
+                $sql .= " name='" . $this->getName() . "', ";
             }
             if ( $this->getAddress() != null){
-                $sql .= " address '" . $this->getAddress() . "' ";
+                $sql .= " address='" . $this->getAddress() . "', ";
             }
             if ( $this->getMobile() != null){
-                $sql .= " mobile " . $this->getMobile() . " ";
+                $sql .= " mobile=" . $this->getMobile() . ", ";
             }
 
             $sql .= " updated_by = :updatedBy, updated_on = :updatedOn WHERE id = :userId";
@@ -120,12 +120,29 @@
         }
 
 
-        
+        public function getCustomerDetailsById()
+        {
+            $sql = "SELECT 
+                        c.*, 
+                        u.name as created_user, 
+                        u1.name as updated_user
+                    FROM customers c 
+                        JOIN users u ON (c.created_by = u.id)
+                        LEFT JOIN users u1 ON (c.updated_by = u1.id)
+                    WHERE c.id = :customerId";
+
+                    $stmt = $this->dbConn->prepare($sql);
+                    $stmt->bindParam(':customerId', $this->id);
+                    $stmt->execute();
+                    $customer = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                    return $customer;
+        }
 
 
 
         
-    }
+    }//End of class
 
 
 ?>

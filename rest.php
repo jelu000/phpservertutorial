@@ -3,6 +3,10 @@
     require_once('constants.php');
     require_once('customer.php');
     require_once('DbConnect.php');
+
+    require 'vendor/autoload.php';
+    use Firebase\JWT\JWT;
+    use Firebase\JWT\Key;
     
     
     
@@ -12,6 +16,9 @@
         protected $request;
         protected $serviceName;
         protected $param;
+
+        protected $dbConn;
+        protected $userId;
 
     public function __construct(){
            
@@ -25,9 +32,54 @@
            $this->validateRequest($this->request);
            //echo $request;
 
+           $db = new DbConnect;
+           $this->dbConn = $db->connect();
+
+           if ( 'generatetoken' != strtolower( $this->serviceName) ){
+               $this->validateToken();
+           }
+
        }
        
-       public function validateRequest($request){
+       public function validateToken(){
+
+        try{
+
+            $token = $this->getBearerToken();
+            
+            /**did not work! */
+            /**$payload = JWT::decode($token, new Key(SECRET_KEY, ['HS256']), ['HS256']);*/
+            
+            /**I have to create a Key Object instead! */
+            $t_key = new Key(SECRET_KEY, 'HS256');
+            $payload = JWT::decode($token, $t_key);
+
+            $stmt = $this->dbConn->prepare("SELECT * FROM users WHERE id = :userId");
+            
+            $stmt->bindParam(":userId", $payload->userId);
+            
+            $stmt->execute();
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!is_array($user)){
+                $this->returnResponse(INVALID_USER_PASS, "This user is not found in our database!");
+            }
+            
+            if ( $user['active'] == 0 ){
+                $this->returnResponse(USER_NOT_ACTIVE, "This user maybe deactivated, contact admin!");
+            }
+            
+            $this->userId = $payload->userId;
+
+        }
+        catch (Exception $e){
+            $this->throwError(ACCES_TOKEN_ERRORS, $e->getMessage());
+        }
+
+       }
+       
+       
+       public function validateRequest($request){ 
 
             if ($_SERVER['CONTENT_TYPE'] !== 'application/json'){
                 $this->throwError(REQUEST_CONTENTTYPE_NOT_VALID, 'Request content-type not valid, must be application/json');
