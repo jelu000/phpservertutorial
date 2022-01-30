@@ -1,0 +1,101 @@
+{
+  "name": "generateToken",
+  "param": {
+    "user": "oddy",
+    "pass": "test123"
+  }
+}
+
+användarnamn: phpservertutorial
+Lösenord: losenord
+databas/shema: jwtapi
+
+CREATE TABLE `jwtapi`.`users` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(60) NULL,
+  `email` VARCHAR(60) NULL,
+  `password` VARCHAR(60) NULL,
+  `active` INT NULL,
+  `created_on` DATE NULL,
+  PRIMARY KEY (`id`));
+
+
+  insert into users ( name, email, password, active, created_on ) values 
+('admin', 'admin@gmal.com', 'admin123', 1, '2017-11-14'),
+('Dugge', 'dugge@gmal.com', 'pass123', 0, '2017-11-14');
+
+
+CREATE TABLE `jwtapi`.`customers` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(60) NULL,
+  `email` VARCHAR(60) NULL,
+  `adress` VARCHAR(100) NULL,
+  `mobile` INT NULL,
+  `update_by` INT NULL,
+  `updated_on` DATE NULL,
+  `created_by` INT NULL,
+  `created_on` DATE NULL,
+  PRIMARY KEY (`id`));
+
+
+
+tutorial nr 6
+
+not really happy with this logic @ 1:52 function processApi. you create 2 objects, with a constructor which processes the POST data twice, 
+validation runs also twice. what is your reason for this implementation?
+
+
+Rafael Varela Perez
+för 2 år sedan (redigerad)
+Digital Apps is right. You can refactorize processApi method, I did it in this way:
+
+public function processApi()
+{
+ $serviceName = $this->serviceName;
+
+ if (is_callable([$this, $serviceName])) {
+  $this->$serviceName();
+ } else {
+  $this->throwError(API_DOES_NOT_EXIST, 'Api does not exists');
+ }
+}
+
+3
+
+
+Digital Apps
+Digital Apps
+för 2 år sedan
+ @Rafael Varela Perez  thank you
+
+
+
+Digital Apps
+Digital Apps
+för 2 år sedan
+ @Rafael Varela Perez  another solution would be to simply use a switch function as a router. 
+ the automation of the name recognition to invoke a function doen't really help with anything.
+
+tutorial 7
+$token = JWT:: encode not working message class JWT not found
+
+3
+
+
+gazj354
+gazj354
+för 3 år sedan (redigerad)
+Did you download the jwt.php file? It was mentioned right at the beginning of part 1. You will need to download it and include it in your directory alongside your other files. Make sure the filename is jwt.php and not JWT.php because your autoloader is forcing all class names to be lowercase.
+
+Also, if you copied the file from GitHub rather than using composer to install it, you will need to comment out the namespace lines at the top of the file.
+
+Hopefully, this helps somebody.
+
+I Jens used composer adn added this lines
+
+    //require_once('JWT.php'); // NOT WITH Composer,  need to comment out the namespace lines
+    
+    require 'vendor/autoload.php';
+    
+    use Firebase\JWT\JWT;
+    use Firebase\JWT\Key;
