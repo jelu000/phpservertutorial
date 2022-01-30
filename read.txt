@@ -10,6 +10,8 @@ användarnamn: phpservertutorial
 Lösenord: losenord
 databas/shema: jwtapi
 
+Script for table creation.
+
 CREATE TABLE `jwtapi`.`users` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(60) NULL,
@@ -18,12 +20,6 @@ CREATE TABLE `jwtapi`.`users` (
   `active` INT NULL,
   `created_on` DATE NULL,
   PRIMARY KEY (`id`));
-
-
-  insert into users ( name, email, password, active, created_on ) values 
-('admin', 'admin@gmal.com', 'admin123', 1, '2017-11-14'),
-('Dugge', 'dugge@gmal.com', 'pass123', 0, '2017-11-14');
-
 
 CREATE TABLE `jwtapi`.`customers` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -38,6 +34,16 @@ CREATE TABLE `jwtapi`.`customers` (
   PRIMARY KEY (`id`));
 
 
+Insert 2 users to the users Table
+
+  insert into users ( name, email, password, active, created_on ) values 
+('admin', 'admin@gmal.com', 'admin123', 1, '2017-11-14'),
+('Dugge', 'dugge@gmal.com', 'pass123', 0, '2017-11-14');
+
+
+
+
+Comments from youtube that was intressting.
 
 tutorial nr 6
 
@@ -91,6 +97,8 @@ Also, if you copied the file from GitHub rather than using composer to install i
 
 Hopefully, this helps somebody.
 
+
+
 I Jens used composer adn added this lines
 
     //require_once('JWT.php'); // NOT WITH Composer,  need to comment out the namespace lines
@@ -99,3 +107,18 @@ I Jens used composer adn added this lines
     
     use Firebase\JWT\JWT;
     use Firebase\JWT\Key;
+
+    tutorial 8 in function addCustomer() I had to do this:
+
+     try {
+                
+                $token = $this->getBearerToken();
+                
+                /**did not work me! */
+                //$payload = JWT::decode($token, new Key(SECRET_KEY, ['HS256']), ['HS256']);
+                
+                /**I have to create a Key Object instead! */
+                $t_key = new Key(SECRET_KEY, 'HS256');
+                $payload = JWT::decode($token, $t_key);
+
+                $stmt = $this->dbConn->prepare("SELECT * FROM users WHERE id = :userId");
