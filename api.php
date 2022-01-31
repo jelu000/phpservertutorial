@@ -134,7 +134,7 @@
 
         public function getCustomerDetails() {
             
-            $customerId =   $this->validateParameter('customerId', $this->param['customerId'], INTEGER, false);
+            $customerId =   $this->validateParameter('customerId', $this->param['customerId'], INTEGER, true);
             
             $cust = new Customer;
             $cust->setId($customerId);
@@ -204,6 +204,23 @@
             }          
         }
 
+        public function deleteCustomer() {
+            
+            $customerId =   $this->validateParameter('customerId', $this->param['customerId'], INTEGER);
+            //echo $customerId; exit;
+            $cust = new Customer;
+            $cust->setId($customerId);
+
+            if (!$cust->delete()){
+                $message = "Failed to delete!";
+            }
+            else{
+                $message = "deleted succesfully!";
+            }
+
+            $this->returnResponse(SUCCESS_RESPONSE, $message);
+
+        }
         
 
     }//END OF CLASS

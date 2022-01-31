@@ -1,10 +1,5 @@
-{
-  "name": "generateToken",
-  "param": {
-    "user": "oddy",
-    "pass": "test123"
-  }
-}
+
+http requst that are used in the Body:
 
 {
   "name": "generateToken",
@@ -14,7 +9,41 @@
   }
 }
 
+In this requsts I have added this to the requst Headers!
+Authorization          Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUz
 
+  "name": "addCustomer",
+  "param": {
+    "name": "Din",
+    "email": "Din@gmal.com",
+    "addr": "Puma",
+    "mobile": 3323
+  }
+}
+
+{
+  "name": "updateCustomer",
+  "param": {
+    "customerId": 2,
+    "name": "So",
+    "addr": "Pone",
+    "mobile": 1324
+  }
+}
+
+{
+  "name": "getCustomerDetails",
+  "param": {
+    "customerId":2
+  }
+}
+
+{
+  "name": "deleteCustomer",
+  "param": {
+    "customerId": 2
+  }
+}
 
 
 användarnamn: phpservertutorial
